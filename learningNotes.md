@@ -25,7 +25,24 @@ a box that can hold multiple components and views, and providing a scrolling con
 <SafeAreaView>
 provides a safe zone to render App's content without being covered by the device's hardward features like Apple's Notch
 
+<useState>
+Flutter: similar to mananging the state of a variable in a stateful widget in the sense that it triggers component to be re-rendered when its state changes
+
+<useEffect>
+Lets you perform side effects in functional components. Used for operations like data fetching, subscriptions, or manually changing the DOM.
 Questions
 
-1. you are hard-coding the values for width and height values. In flutter, you use Mediabox.height to ensure that for every device, the UI would
-   look the same. Should you do the same here? is it bad practice to hard-code these values?
+1. I am hard-coding the values for width and height values. In flutter, you use Mediabox.height to ensure that for every device, the UI would
+   look the same. Should I do the same here? is it bad practice to hard-code these values?
+
+2. Should styles be separated in a different file? I read conflicting opinions, however, I know that in flutter they are separated, but I will stick to not separating because most of the youtube videos I watched told me not to.
+
+3. My Code errors when trying to do separate screens into files. Have to look deeper into why that is.
+
+Good Practices
+
+1. SafeAreaView (similar to SafeArea in Flutter): use this to ensure content is not overlapped by physical features of devices, such as Apple's Notch
+
+2. Standard practice of keeping styles in Alphabetical Order
+
+3. Try to keep validation functions outside of components

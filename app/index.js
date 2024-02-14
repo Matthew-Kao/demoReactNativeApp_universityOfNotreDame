@@ -1,101 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Button, Image, Alert, SafeAreaView, Platform} from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  Alert,
+  Button,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 
-
+//name validation: must have both a first and last name
 const validateName = (name) => {
-    // Checks if there's at least one space
     return /\s/.test(name);
   };
   
-  const validateEmail = (email) => {
-    // Basic email validation
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-  
-  const validatePhone = (phone) => {
-    // Checks if there are 10 digits in the phone number
-    const digits = phone.replace(/\D/g, ''); // Removes any non-digit characters
-    return digits.length === 11;
-  };
+//email validation: must have characters before and after the @ symbol, followed by a period and characters after the period
+const validateEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
+//phone validation: phone numbers must be 11 characters long
+const validatePhone = (phone) => {
+  const digits = phone.replace(/\D/g, ''); 
+    return digits.length === 11;
+};
 
 const Stack = createStackNavigator();
 
-const SelectAvatarScreen = ({ navigation }) => {
-  const avatars = [
-    require('../images/cuteCatPic1.jpeg'),
-    require('../images/cuteCatPic2.jpeg'),
-    require('../images/cuteCatPic3.jpeg'),
-    require('../images/cuteDogPic1.jpeg'),
-    require('../images/cuteDogPic2.jpeg'),
-    require('../images/cuteDogPic3.jpeg'), // Add path to your images accordingly
-  ];
-
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={styles.titleText}>Please select the cutest picture</Text>
-      {avatars.map((avatar, index) => (
-        <TouchableOpacity
-          key={index}
-          onPress={() => {
-            navigation.navigate('Profile', { avatar });
-          }}
-        >
-          <Image source={avatar} style={{ width: 100, height: 100, margin: 10 }} />
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-};
-
-const EditScreen = ({ route, navigation }) => {
-  const [value, setValue] = useState(route.params.value);
-  const { fieldName, validateAndSave } = route.params;
-
-  const handleGoBack = () => {
-    Alert.alert(
-      "Discard Changes", // Title of the alert
-      "Are you sure you want to discard your changes and go back?", // Message of the alert
-      [
-        {
-          text: "No",
-          style: "cancel",
-        },
-        {
-          text: "Yes",
-          onPress: () => navigation.goBack(), // Navigate back if 'Yes' is pressed
-        },
-      ]
-    );
-  };
-
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <View style={styles.editContainer}>
-        <TextInput
-          style={styles.input}
-          onChangeText={setValue}
-          value={value}
-          placeholder={`Enter ${fieldName}`}
-        />
-        <TouchableOpacity style={styles.saveButton} onPress={() => {
-            const isValid = validateAndSave(value);
-            if (isValid) {
-              navigation.goBack();
-            }
-        }}>
-          <Text style={styles.saveButtonText}>SAVE CHANGES</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
-          <Text style={styles.goBackButtonText}>GO BACK</Text>
-        </TouchableOpacity>
-      </View>
-    </SafeAreaView>
-  );
-};
-
+//this is the User's landing page
 const ProfileScreen = ({ navigation, route}) => {
   const [userInfo, setUserInfo] = useState({
     avatar: require('../images/cuteCatPic1.jpeg'),
@@ -105,6 +41,7 @@ const ProfileScreen = ({ navigation, route}) => {
     studentId: '3036970313',
   });
 
+  // Update the avatar based on user selection.
   useEffect(() => {
     if (route.params?.avatar) {
       handleAvatarChange(route.params.avatar);
@@ -115,10 +52,16 @@ const ProfileScreen = ({ navigation, route}) => {
     setUserInfo({ ...userInfo, [field]: newValue });
   };
 
+  //alternate colors between blue and gold for field values to match ND symbol
+  const getInfoColor = (index) => {
+    return index % 2 === 0 ? 'blue' : 'gold';
+  };
+
   const handleAvatarChange = (newAvatar) => {
     setUserInfo({ ...userInfo, avatar: newAvatar });
   };
 
+  //field validations and descriptive alerts
   const validateAndSave = (field, newValue) => {
     let isValid = false;
     switch (field) {
@@ -142,7 +85,7 @@ const ProfileScreen = ({ navigation, route}) => {
     if (isValid) {
       updateField(field, newValue);
     }
-    return isValid; // Return the validation result
+    return isValid; 
   };
 
   return (
@@ -151,107 +94,209 @@ const ProfileScreen = ({ navigation, route}) => {
     <View style={styles.container}>
 
       {/* Circular Avatar */}
-      <TouchableOpacity onPress={() => navigation.navigate('SelectAvatar')}>
-        <Image source={userInfo.avatar} style={styles.avatar} />
-      </TouchableOpacity>
+    <TouchableOpacity onPress={() => navigation.navigate('SelectAvatar')}>
+      <Image source={userInfo.avatar} style={styles.avatar} />
+    </TouchableOpacity>
 
-      {/* Name */}
-      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Edit', { 
-        fieldName: 'name', 
-        value: userInfo.name, 
-        validateAndSave: (newValue) => {
+    {/* Name */}
+    <TouchableOpacity
+      style = {styles.item}
+      onPress={() =>
+        navigation.navigate('Edit', {
+          fieldName: 'name',
+          value: userInfo.name,
+          validateAndSave: (newValue) => {
             const isValid = validateAndSave('name', newValue);
             if (isValid) {
               navigation.goBack();
             }
-          },})}>
-        <Text style={styles.label}>Name</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.info}>{userInfo.name}</Text>
-          <Text style={styles.arrow}>&gt;</Text>
-        </View>
-      </TouchableOpacity>
+          },
+        })
+      }
+    >
+      <Text style={styles.label}>Name</Text>
+      <View style={styles.infoContainer}>
+        <Text style={[styles.info, {color: getInfoColor(0)}]}>{userInfo.name}</Text>
+        <Text style={styles.arrow}>&gt;</Text>
+      </View>
+    </TouchableOpacity>
 
-      {/* Phone */}
-      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Edit', { 
-        fieldName: 'phone', 
-        value: userInfo.phone, 
-        validateAndSave: (newValue) => {
+    {/* Phone */}
+    <TouchableOpacity
+      style = {styles.item}
+      onPress={() =>
+        navigation.navigate('Edit', {
+          fieldName: 'phone',
+          value: userInfo.phone,
+          validateAndSave: (newValue) => {
             const isValid = validateAndSave('phone', newValue);
             if (isValid) {
               navigation.goBack();
             }
           },
-        })}>
-        <Text style={styles.label}>Phone</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.info}>{userInfo.phone}</Text>
-          <Text style={styles.arrow}>&gt;</Text>
-        </View>
-      </TouchableOpacity>
+        })
+      }
+    >
+      <Text style={styles.label}>Phone</Text>
+      <View style={styles.infoContainer}>
+        <Text style={[styles.info, {color: getInfoColor(1)}]}>{userInfo.phone}</Text>
+        <Text style={styles.arrow}>&gt;</Text>
+      </View>
+    </TouchableOpacity>
 
-      {/* Email */}
-      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Edit', { 
-        fieldName: 'email', 
-        value: userInfo.email, 
-        validateAndSave: (newValue) => {
+    {/* Email */}
+    <TouchableOpacity
+      style = {styles.item}
+      onPress={() =>
+        navigation.navigate('Edit', {
+          fieldName: 'email',
+          value: userInfo.email,
+          validateAndSave: (newValue) => {
             const isValid = validateAndSave('email', newValue);
             if (isValid) {
               navigation.goBack();
             }
-          },})}>
-        <Text style={styles.label}>Email</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.info}>{userInfo.email}</Text>
-          <Text style={styles.arrow}>&gt;</Text>
-        </View>
-      </TouchableOpacity>
-
-      {/* Student ID */}
-      <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('Edit', { 
-        fieldName: 'studentId', 
-        value: userInfo.studentId, 
-        validateAndSave: (newValue) => {
-            updateField('studentId', newValue); // Directly update without validation
-            navigation.goBack();
           },
-      })}>
-        <Text style={styles.label}>Student ID</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.info}>{userInfo.studentId}</Text>
-          <Text style={styles.arrow}>&gt;</Text>
-        </View>
-      </TouchableOpacity>
+        })
+      }
+    >
+      
+      <Text style={styles.label}>Email</Text>
+      <View style={styles.infoContainer}>
+        <Text style={[styles.info, {color: getInfoColor(2)}]}>{userInfo.email}</Text>
+        <Text style={styles.arrow}>&gt;</Text>
+      </View>
+    </TouchableOpacity>
+
+    {/* Student ID */}
+    <TouchableOpacity
+      style = {styles.item}
+      onPress={() =>
+        navigation.navigate('Edit', {
+          fieldName: 'studentId',
+          value: userInfo.studentId,
+          validateAndSave: (newValue) => {
+            const isValid = validateAndSave('studentId', newValue);
+            if (isValid) {
+              navigation.goBack();
+            }
+          },
+        })
+      }
+    >
+      <Text style={styles.label}>Student ID</Text>
+      <View style={styles.infoContainer}>
+        <Text style={[styles.info, {color: getInfoColor(3)}]}>{userInfo.studentId}</Text>
+        <Text style={styles.arrow}>&gt;</Text>
+      </View>
+    </TouchableOpacity>
     </View>
-    <View style={{...styles.remainingSpaceContainer, backgroundColor: 'white'}}>
-    <View style={{ ...styles.logoContainer, marginTop: 50, marginBottom: 50, backgroundColor: 'white'}}>
-        <Image source={require('../images/NDlogo.jpeg')} style={styles.logo}  />
+      <View style={{...styles.remainingSpaceContainer, backgroundColor: 'white'}}>
+      <View style={{ ...styles.logoContainer, marginTop: 50, marginBottom: 50, backgroundColor: 'white'}}>
+          <Image source={require('../images/NDlogo.jpeg')} style={styles.logo}  />
       </View>
-      </View>
+    </View>
     </SafeAreaView>
 
   );
 };
 
-const EditAvatarScreen = ({ route, navigation }) => {
-    const selectNewAvatar = () => {
-        return require('../images/cuteCatPic1.jpeg'); 
-      }; 
-  
-    return (
-      <View style={styles.editContainer}>
-        <Button
-          title="Select New Avatar"
+// Screen for selecting a new avatar.
+const SelectAvatarScreen = ({ navigation }) => {
+  const avatars = [
+    require('../images/cuteCatPic1.jpeg'),
+    require('../images/cuteCatPic2.jpeg'),
+    require('../images/cuteCatPic3.jpeg'),
+    require('../images/cuteDogPic1.jpeg'),
+    require('../images/cuteDogPic2.jpeg'),
+    require('../images/cuteDogPic3.jpeg'), 
+  ];
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={styles.titleText}>Please select the cutest picture</Text>
+      {avatars.map((avatar, index) => (
+        <TouchableOpacity
+          key={index}
           onPress={() => {
-            const newAvatar = selectNewAvatar();
-            route.params.setAvatar(newAvatar);
-            navigation.goBack();
+            navigation.navigate('Profile', { avatar });
           }}
-        />
-      </View>
+        >
+          <Image source={avatar} style={{ width: 100, height: 100, margin: 10 }} />
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+// One Screen for editing user details such as Name, Phone Number, Email and studentID .
+const EditScreen = ({ route, navigation }) => {
+  const [value, setValue] = useState(route.params.value);
+  const { fieldName, validateAndSave } = route.params;
+
+  //Alert the user when they try to go back without passing the validation
+  const handleGoBack = () => {
+    Alert.alert(
+      "Discard Changes", 
+      "Are you sure you want to discard your changes and go back?", 
+      [
+        {
+          text: "No",
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: () => navigation.goBack(), 
+        },
+      ]
     );
   };
 
+  return (
+    <SafeAreaView style={{ flex: 1 }}>
+      <View style={styles.editContainer}>
+        <TextInput
+          style={styles.input}
+          onChangeText={setValue}
+          value={value}
+        />
+        <TouchableOpacity style={styles.saveButton} onPress={() => {
+            const isValid = validateAndSave(value);
+            if (isValid) {
+              navigation.goBack();
+            }
+        }}>
+          <Text style={styles.saveButtonText}>SAVE CHANGES</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.goBackButton} onPress={handleGoBack}>
+          <Text style={styles.goBackButtonText}>GO BACK</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
+
+const EditAvatarScreen = ({ route, navigation }) => {
+  //this is my cutest picture, so this is my default avatar :)
+  const selectNewAvatar = () => {
+      return require('../images/cuteCatPic1.jpeg'); 
+    }; 
+
+  return (
+    <View style={styles.editContainer}>
+      <Button
+        title="Select New Avatar"
+        onPress={() => {
+          const newAvatar = selectNewAvatar();
+          route.params.setAvatar(newAvatar);
+          navigation.goBack();
+        }}
+      />
+    </View>
+  );
+};
+
+// Sets up the app's navigation structure, managing transitions between screens.
 const App = () => {
     return (
       <Stack.Navigator>
@@ -264,127 +309,120 @@ const App = () => {
   };
 
 
-
+//styling for the application
 const styles = StyleSheet.create({
-  saveButton: {
-    backgroundColor: 'black',
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.30,
-    shadowRadius: 4.65,
-    elevation: 8,
-  },
-  saveButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
+  arrow: {
+    color: '#ccc',
+    fontSize: 18,
   },
   avatar: {
-    width: 100, 
-    height: 100, 
-    alignSelf: 'center', 
-    marginTop: 20, 
-    marginBottom: 20, 
-    },
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    padding: 20,
-    textAlign: 'center',
-  },
-  item: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-  },
-  label: {
-    fontSize: 18,
-    color: 'lightblue',
-  },
-  infoContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  info: {
-    fontSize: 18,
-    marginRight: 5,
-    color: 'gold'
-  },
-  logoContainer: {
-    alignItems: 'center', // This centers the logo horizontally.
-    justifyContent: 'center', // This aligns the logo to the bottom.
+    alignSelf: 'center',
+    height: 100,
     marginBottom: 20,
     marginTop: 20,
-    backgroundColor: 'transparent' // You can adjust this value to move the logo up from the very bottom.
+    width: 100,
   },
-  logo: {
-    width: 150, // Set the width of your logo.
-    height: 150, // Set the height of your logo.
-    resizeMode: 'contain',
-    backgroundColor: 'transparent' // This ensures the logo's aspect ratio is maintained.
-  },
-
-  arrow: {
-    fontSize: 18,
-    color: '#ccc',
-  },
-  safeArea: {
+  container: {
+    backgroundColor: '#fff',
     flex: 1,
-    backgroundColor: 'white', // Change this as needed for your app's theme
   },
   editContainer: {
     flex: 1,
     justifyContent: 'center',
     padding: 60,
   },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-  },
-  remainingSpaceContainer: {
-    flex: 1, // This will take all the available space
-    justifyContent: 'center', // This will center the logo container on the cross axis (vertically in this case)
-    alignItems: 'center', // This will center the logo container on the main axis (horizontally in this case)
-    paddingVertical: 20, // Add padding if needed to ensure there's some space above and below the logo
-  },
   goBackButton: {
-    backgroundColor: 'gray', // Or any other color you prefer
+    backgroundColor: 'gray',
+    borderRadius: 20,
+    marginTop: 10,
     paddingHorizontal: 30,
     paddingVertical: 10,
-    borderRadius: 20,
-    marginTop: 10, // Add some margin at the top for spacing
-    // Add any additional styling you want for the button
   },
   goBackButtonText: {
     color: 'white',
-    textAlign: 'center',
     fontWeight: 'bold',
-    // Add any additional styling you want for the text
+    textAlign: 'center',
+  },
+  header: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    padding: 20,
+    textAlign: 'center',
+  },
+  info: {
+    fontSize: 18,
+    marginRight: 5,
+  },
+  infoContainer: {
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  input: {
+    borderColor: 'gray',
+    borderWidth: 1,
+    height: 40,
+    marginBottom: 20,
+  },
+  item: {
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  label: {
+    color: 'black',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  logo: {
+    backgroundColor: 'transparent',
+    height: 150,
+    resizeMode: 'contain',
+    width: 150,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    justifyContent: 'center',
+    marginBottom: 20,
+    marginTop: 20,
+  },
+  remainingSpaceContainer: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    flex: 1,
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
+  safeArea: {
+    backgroundColor: 'white',
+    flex: 1,
+  },
+  saveButton: {
+    backgroundColor: 'black',
+    borderRadius: 20,
+    elevation: 8,
+    paddingHorizontal: 30,
+    paddingVertical: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.30,
+    shadowRadius: 4.65,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
   titleText: {
-    fontSize: 24, // Increased font size
-    fontWeight: 'bold', // Bold font weight
-    textAlign: 'center', // Center align text
-    marginVertical: 20, // Add vertical margin for spacing
-    color: '#2F4F4F', // Dark slate gray color for the text
-    // You can add additional styling such as fontFamily if you have custom fonts
+    color: '#2F4F4F',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginVertical: 20,
+    textAlign: 'center',
   },
 });
 
